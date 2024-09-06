@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Video Player</title>
+    <!-- Include the hls.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .video-container {
+            width: 80%;
+            max-width: 800px;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="video" controls></video>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('videoId'); // Get video ID from URL
+        const token = urlParams.get('token'); // Get token from URL
+
+        const apiUrl = `/api/video/stream/${videoId}`; // API endpoint to stream video
+
+        fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}` // Include the token in the request headers
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch video stream');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const videoElement = document.getElementById('video');
+            const hlsUrl = data.streamUrl; // URL of the HLS playlist returned by the server
+
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(hlsUrl); // Load HLS stream URL
+                hls.attachMedia(videoElement);
+                hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                    videoElement.play();
+                });
+            } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                // For Safari
+                videoElement.src = hlsUrl;
+                videoElement.addEventListener('loadedmetadata', function () {
+                    videoElement.play();
+                });
+            }
+        })
+        .catch(error => console.error('Error loading video:', error));
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Videos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .video-list {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        .video-item {
+            background: #222;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-item button {
+            background-color: #555;
+            color: #ffffff;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .video-item button:hover {
+            background-color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Available Videos</h1>
+    <div class="video-list" id="video-list"></div>
+
+    <script>
+        const apiToken = '23434'; 
+
+        fetch('/api/video/list', {
+            method: 'GET'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch videos');
+            }
+            return response.json();
+        })
+        .then(videos => {
+            const videoList = document.getElementById('video-list');
+            videos.forEach(video => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+                videoItem.innerHTML = `
+                    <span>${video.title}</span>
+                    <button onclick="generateToken('${video._id}')">Play</button>
+                `;
+                videoList.appendChild(videoItem);
+            });
+        })
+        .catch(error => console.error('Error fetching videos:', error));
+
+        function generateToken(videoId) {
+            fetch('/api/auth/generate-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ apiToken: apiToken, videoId: videoId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const token = data.token;
+                localStorage.setItem('accessToken', token);
+
+                playVideo(videoId, token);
+            })
+            .catch(error => console.error('Error generating token:', error));
+        }
+
+        function playVideo(videoId, token) {
+            window.location.href = `/players/index.html?videoId=${videoId}&token=${token}`; 
+        }
+    </script>
+</body>
+</html>
