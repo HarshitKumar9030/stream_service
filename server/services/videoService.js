@@ -16,28 +16,26 @@ const createHLSStream = (filePath, outputDir) => {
     }
 
     ffmpeg(filePath)
-      .addOptions([
-        '-profile:v baseline',  // For compatibility with most devices
-        '-level 3.0',
-        '-start_number 0',      // Start segment numbering from 0
-        '-hls_time 10',         // Duration of each segment in seconds
-        '-hls_list_size 0',     // Include all segments in the playlist
-        '-f hls'                // HLS format
-      ])
-      .output(`${outputDir}/index.m3u8`)  
-      .on('start', (commandLine) => {
-        console.log('FFmpeg process started:', commandLine);  
-      })
-      .on('end', () => resolve('HLS stream created successfully'))
-      .on('error', (err, stdout, stderr) => {
-        console.error('Error occurred during FFmpeg processing:', err.message);
-        console.error('FFmpeg stderr output:', stderr);  
-        reject(err);
-      })
-      .run();
+    .output(`${outputDir}/index_360p.m3u8`)
+    .videoCodec('libx264')
+    .size('640x360')
+    .addOptions(['-profile:v baseline', '-level 3.0', '-start_number 0', '-hls_time 10', '-hls_list_size 0', '-f hls'])
+    .output(`${outputDir}/index_480p.m3u8`)
+    .videoCodec('libx264')
+    .size('854x480')
+    .addOptions(['-profile:v baseline', '-level 3.0', '-start_number 0', '-hls_time 10', '-hls_list_size 0', '-f hls'])
+    .output(`${outputDir}/index_720p.m3u8`)
+    .videoCodec('libx264')
+    .size('1280x720')
+    .addOptions(['-profile:v baseline', '-level 3.0', '-start_number 0', '-hls_time 10', '-hls_list_size 0', '-f hls'])
+    .on('end', () => resolve('HLS stream created successfully'))
+    .on('error', (err) => reject(err))
+    .run();
   });
 };
 
 module.exports = {
   createHLSStream,
 };
+
+

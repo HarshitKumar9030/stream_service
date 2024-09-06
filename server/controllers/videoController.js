@@ -1,11 +1,14 @@
 const Video = require('../models/video');
 const { extendToken } = require('../utils/tokenUtils');
 const path = require('path');
+const fs = require('fs');
 
-
+/**
+ * Stream video with multiple quality levels.
+ */
 const streamVideo = async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     const video = await Video.findById(id);
 
@@ -14,11 +17,18 @@ const streamVideo = async (req, res) => {
     }
 
     const baseName = path.basename(video.filePath); 
+    const qualities = ['360p', '480p', '720p']; 
+    const qualityUrls = {};
 
-    const hlsPath = path.join(__dirname, '..', 'hls', baseName, 'index.m3u8');
+    qualities.forEach((quality) => {
+      const hlsPath = path.join(__dirname, '..', 'hls', baseName, `index_${quality}.m3u8`);
+      if (fs.existsSync(hlsPath)) {
+        qualityUrls[quality] = `/hls/${baseName}/index_${quality}.m3u8`;
+      }
+    });
 
-    console.log(hlsPath)
-    res.json({ streamUrl: `/hls/${baseName}/index.m3u8` });
+    // Return the available quality URLs
+    res.json({ streamUrls: qualityUrls });
   } catch (error) {
     console.error('Error streaming video:', error);
     res.status(500).send('Error streaming video');
