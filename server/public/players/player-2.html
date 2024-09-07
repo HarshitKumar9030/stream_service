@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Player</title>
+    <title>Player 2</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
@@ -13,10 +13,14 @@
   </head>
   <style>
     :root {
-      --primary-color: #ff0000;
-      --secondary-color: #3ea6ff;
-      --text-color: #ffffff;
-      --bg-color: rgba(28, 28, 28, 0.9);
+      --primary-color: #6366f1;
+      --secondary-color: #22c55e;
+      --text-color: #f3f4f6;
+      --bg-color: rgba(31, 41, 55, 0.8);
+    }
+
+    body {
+      font-family: "Inter", sans-serif !important;
     }
 
     #video-container {
@@ -28,7 +32,8 @@
       align-items: center;
       justify-content: center;
       background-color: #000;
-      border-radius: 12px;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
     #video {
@@ -38,11 +43,12 @@
     }
 
     .control-bar {
-      background: linear-gradient(to top, var(--bg-color), transparent);
-      padding: 0.5rem 1rem;
+      background: var(--bg-color);
+      backdrop-filter: blur(8px);
+      padding: 1rem;
       gap: 1rem;
-      border-bottom-left-radius: 12px;
-      border-bottom-right-radius: 12px;
+      border-radius: 12px;
+      margin: 1rem;
     }
 
     .control-button {
@@ -53,34 +59,62 @@
       font-size: 1.5rem;
       padding: 0.5rem;
       transition: all 0.2s;
-      border-radius: 50%;
+      border-radius: 8px;
     }
 
     .control-button:hover {
       color: var(--primary-color);
+      background-color: rgba(255, 255, 255, 0.1);
     }
 
     #progress-bar {
-      height: 4px;
-      background-color: rgba(255, 255, 255, 0.3);
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.2);
       cursor: pointer;
       transition: height 0.2s;
-      border-radius: 2px;
+      border-radius: 3px;
     }
 
     #progress-bar:hover {
-      height: 6px;
+      height: 8px;
     }
 
     #progress-filled {
-      background-color: var(--primary-color);
+      background: linear-gradient(
+        90deg,
+        var(--primary-color),
+        var(--secondary-color)
+      );
       height: 100%;
-      border-radius: 2px;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    #progress-filled::after {
+      content: "";
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background-color: var(--secondary-color);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
     }
 
     #timestamp {
       font-size: 0.9rem;
       color: var(--text-color);
+      font-weight: 500;
+    }
+
+    @media (min-width: 768px) {
+      #timestamp {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        font-weight: 500;
+      }
     }
 
     #volume-slider {
@@ -99,28 +133,36 @@
       appearance: none;
       width: 14px;
       height: 14px;
-      background: var(--text-color);
+      background: var(--secondary-color);
       cursor: pointer;
       border-radius: 50%;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    }
+
+    #captions {
+      display: none;
     }
 
     #volume-slider::-moz-range-thumb {
       width: 14px;
       height: 14px;
-      background: var(--text-color);
+      background: var(--secondary-color);
       cursor: pointer;
       border-radius: 50%;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
     }
 
     .volume-container:hover #volume-slider {
-      width: 60px;
+      width: 80px;
       opacity: 1;
     }
 
     .options-menu {
       background-color: var(--bg-color);
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
     .options-menu button {
@@ -128,52 +170,59 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.5rem;
       text-align: left;
       width: 100%;
       transition: background-color 0.2s;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-weight: 500;
     }
 
     .options-menu button:hover {
       background-color: rgba(255, 255, 255, 0.1);
+      color: var(--primary-color);
     }
 
     #center-play-pause {
       font-size: 4rem;
-      color: rgba(255, 255, 255, 0.8);
-      background-color: rgba(0, 0, 0, 0.5);
+      color: var(--text-color);
+      background-color: rgba(31, 41, 55, 0.6);
+      backdrop-filter: blur(4px);
       border-radius: 50%;
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
+      transition: all 0.3s;
     }
 
     #center-play-pause:hover {
       color: var(--primary-color);
       transform: scale(1.1);
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
     }
 
     #captions {
       position: absolute;
-      bottom: 60px;
-      left: 0;
-      right: 0;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
       text-align: center;
       font-size: 1.2rem;
       color: var(--text-color);
-      text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      max-width: 80%;
       pointer-events: none;
     }
   </style>
 
-  <body class="bg-black min-h-screen">
+  <body class="min-h-screen flex items-center justify-center p-4">
     <div
       id="video-container"
-      class="relative w-full flex items-center justify-center overflow-hidden group"
+      class="relative w-full max-w-4xl aspect-video flex items-center justify-center overflow-hidden group"
     >
       <video id="video" class="object-contain"></video>
       <div id="captions"></div>
@@ -188,17 +237,17 @@
       <div
         class="absolute bottom-0 left-0 right-0 flex flex-col control-bar transition-opacity duration-300 opacity-0 group-hover:opacity-100"
       >
-        <div id="progress-bar" class="w-full cursor-pointer">
+        <div id="progress-bar" class="w-full cursor-pointer mb-4">
           <div
             id="progress-filled"
             class="h-full transition-width duration-150"
           ></div>
         </div>
-        <div class="flex items-center justify-between mt-2">
-          <div class="flex items-center">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
             <button
               id="play-pause"
-              title="Play/Pause (k)"
+              title="Play/Pause (k, Space)"
               class="control-button"
             >
               <i class="ri-play-fill"></i>
@@ -217,7 +266,7 @@
             >
               <i class="ri-speed-fill"></i>
             </button>
-            <div class="volume-container flex items-center">
+            <div class="volume-container flex items-center space-x-2">
               <button id="mute" title="Mute/Unmute (m)" class="control-button">
                 <i class="ri-volume-up-fill"></i>
               </button>
@@ -230,12 +279,12 @@
                 value="1"
               />
             </div>
-            <div id="timestamp" class="ml-4"></div>
           </div>
-          <div class="flex items-center">
+          <div id="timestamp" class="px-4"></div>
+          <div class="flex items-center space-x-4">
             <button
               id="captions-btn"
-              title="Captions"
+              title="Captions (c)"
               class="control-button relative"
             >
               <i class="ri-closed-captioning-fill"></i>
@@ -260,12 +309,12 @@
 
       <div
         id="quality-options"
-        class="hidden absolute right-12 bottom-20 options-menu p-2"
+        class="hidden absolute right-8 bottom-24 options-menu p-2"
       ></div>
 
       <div
         id="captions-options"
-        class="hidden absolute right-20 bottom-20 options-menu p-2"
+        class="hidden absolute right-20 bottom-24 options-menu p-2"
       >
         <button id="captions-off">Off</button>
         <button id="captions-en">English</button>
